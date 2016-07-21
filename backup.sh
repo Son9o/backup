@@ -20,8 +20,9 @@ echo "File List:"
 /usr/local/bin/megals -hl | grep -i $NAME
 echo "Login credentails used:" 
 cat /root/.megarc
-cat $LOGFILE | mailx -a /root/backup_filelist.log -s "backup-from $DATE" $E_MAIL
+cat $LOGFILE | mutt -a /root/backup_filelist.log -s "$SUBJECT" -- $E_MAIL
 
 #Clean-up
 rm -f /root/all_databases_$DATE.sql.gz
 rm -f /$NAME.tar.gz
+rm -f $LOGFILE
