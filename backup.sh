@@ -1,6 +1,6 @@
 #!/bin/bash
 #all megatools calls are using ~/.megarc credentials
-PASSWORD_MYSQ=your_root_mysql_pass
+PASSWORD_MYSQL=your_root_mysql_pass
 DATE=`date +%d-%m-%y`
 NAME=`hostname`_$DATE
 cd /
