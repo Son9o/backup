@@ -8,7 +8,7 @@ tar -cvpzf $NAME.tar.gz --exclude=/$NAME.tar.gz --exclude=/proc --exclude=/sys -
 /usr/local/bin/megadf --gb | tail -n3 > /root/megastats.log
 /usr/local/bin/megals -hl | grep -i bridge >> /root/megastats.log
 cat /root/.megarc >> /root/megastats.log
-cat /root/megastats.log | mail -a /root/backup.log -s "backup-from $DATE" E-MAIL
+cat /root/megastats.log | mailx -a /root/backup.log -s "backup-from $DATE" E-MAIL
 
 #Clean-up
 rm /root/all_databases_$DATE.sql.gz
