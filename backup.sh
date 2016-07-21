@@ -19,7 +19,7 @@ echo "Disk space check:"
 echo "File List:" 
 /usr/local/bin/megals -hl | grep -i $NAME
 echo "Login credentails used:" 
-cat /root/.megarc >> /root/megastats.log
+cat /root/.megarc
 cat $LOGFILE | mailx -a /root/backup_filelist.log -s "backup-from $DATE" $E_MAIL
 
 #Clean-up
