@@ -32,8 +32,10 @@ fi
 
 echo "Disk space check:" 
 /usr/local/bin/megadf --gb
-echo "File List:" 
-/usr/local/bin/megals -hl #| grep -i $NAME
+echo "File List:"
+/usr/local/bin/megals -ehl #| grep -i $NAME
+echo "This backup:"
+/usr/local/bin/megals -ehl | grep -i $NAME
 echo "Login credentails used:" 
 cat /root/.megarc
 #sending execution log and filelist
