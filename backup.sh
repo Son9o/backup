@@ -1,4 +1,5 @@
 #!/bin/bash
+##REQUIRES: Megatools installed(https://github.com/megous/megatools), mutt, awk
 #all megatools calls are using ~/.megarc credentials
 E_MAIL=your_email_address
 PASSWORD_MYSQL=your_root_mysql_pass
