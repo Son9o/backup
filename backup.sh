@@ -7,6 +7,10 @@ DATE=`date +%d-%m-%y-%H-%M`
 NAME=`hostname`_$DATE
 LOGFILE=/root/backup_$NAME.log
 BACKUP_TARGET=/root/testdir #What to back-up
+#Just for account creation:
+email_domain=your_email_domain
+email_drop=/var/spool/mail/root #change for different user
+MEGA_password=`awk 'NR==3' /root/.megarc | awk '{print $3}'`
 exec > $LOGFILE
 exec 2>&1
 cd /
@@ -21,13 +25,21 @@ backup_file_size=`du -b /$NAME.tar.gz | awk '{print $1}'`
 freespace=`megadf | grep Free | awk '{print $2}'`
 if [ $freespace -gt $backup_file_size ]; then
     echo Uploading...
-	echo "Output from upload:"
-	/usr/local/bin/megaput $NAME.tar.gz
+    echo "Output from upload:"
+    /usr/local/bin/megaput $NAME.tar.gz
 elif [ $backup_file_size -gt 53687091200 ]; then
 	echo This shit is too big for a free account
-	
 else
-    echo not enough space on drive makign new acc, broken for now
+    echo not enough space on drive makign new acc, #missing recursive call to upload and changing the megarc details
+    #format used Username = backup_4digit_number@your_email_domain; requires a front digit eg.backup_1000@your_email_domain otherwise bash shortens it and string slicing will not work 
+    megaaccount=`awk 'NR==2' /root/.megarc | awk '{print $3}'` 
+    megaaccountnumber=${megaaccount:7:4}
+    ((megaaccountnumber++))
+    MEGA_confirm_key=`megareg --name=backup_$megaaccountnumber --email=backup_$megaaccountnumber@$email_domain --password==$MEGA_password --register --scripted | awk '{print $3}'
+    sleep 1m 
+    #Below line greps in root mailfolder for mega verification link, this will probably be best adjusted for some other user
+    MEGA_confirm_link=`tac $email_drop | grep ^http | grep -m1 confirm`
+    megareg --verify $MEGA_confirm_key $MEGA_confirm_link
 
 fi
 
