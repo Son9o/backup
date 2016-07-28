@@ -1,7 +1,7 @@
 #!/bin/bash
 ##REQUIRES: Megatools installed(https://github.com/megous/megatools), mutt, awk
 #all megatools calls are using ~/.megarc credentials
-E_MAIL=your_email_address
+E_MAIL=$USER@$HOSTNAME
 PASSWORD_MYSQL=your_root_mysql_pass
 DATE=`date +%d-%m-%y-%H-%M`
 BACKUP_PREFIX=backup_
@@ -10,7 +10,7 @@ NAME=`hostname`_$DATE
 LOGFILE=$HOME/backup_$NAME.log
 BACKUP_TARGET=/root/testdir #What to back-up
 #Just for account creation:
-email_domain=your_email_domain
+email_domain=$HOSTNAME
 #email_drop=/var/spool/mail/root #change for different user
 email_drop=/var/spool/mail/`whoami`
 MEGA_password=`awk 'NR==3' /$HOME/.megarc | awk '{print $3}'`
