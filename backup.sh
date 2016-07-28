@@ -38,7 +38,7 @@ else
     megaaccount=`awk 'NR==2' $HOME/.megarc | awk '{print $3}'` 
     megaaccountnumber=${megaaccount:7:4}
     ((megaaccountnumber++))
-    MEGA_confirm_key=`megareg --name=backup_$megaaccountnumber --email=backup_$megaaccountnumber@$email_domain --password==$MEGA_password --register --scripted | awk '{print $3}'
+    MEGA_confirm_key=`megareg --name=backup_$megaaccountnumber --email=backup_$megaaccountnumber@$email_domain --password==$MEGA_password --register --scripted | awk '{print $3}'`
     sleep 1m 
     #Below line greps in root mailfolder for mega verification link, this will probably be best adjusted for some other user
     MEGA_confirm_link=`tac $email_drop | grep ^http | grep -m1 confirm`
