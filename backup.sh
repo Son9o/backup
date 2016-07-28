@@ -5,7 +5,7 @@ E_MAIL=$USER@$HOSTNAME
 PASSWORD_MYSQL=your_root_mysql_pass
 DATE=`date +%d-%m-%y-%H-%M`
 BACKUP_PREFIX=backup_
-NAME=`hostname`_$DATE
+NAME=`hostname`_$DATE.tar.gz
 #LOGFILE=/root/backup_$NAME.log
 LOGFILE=$HOME/backup_$NAME.log
 BACKUP_TARGET=/root/testdir #What to back-up
@@ -19,17 +19,17 @@ exec 2>&1
 cd /
 echo "Initailised Logfile on $DATE" >> $LOGFILE
 mysqldump -u root -p$PASSWORD_MYSQL --events --all-databases | gzip > $HOME/all_databases_$DATE.sql.gz
-tar -cvpzf $HOME/$NAME.tar.gz --exclude=$HOME/$NAME.tar.gz --exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/son9o/steamcmd --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=$HOME/backup_filelist.log $BACKUP_TARGET > $HOME/backup_filelist.log
+tar -cvpzf $HOME/$NAME --exclude=$HOME/$NAME--exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/son9o/steamcmd --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=$HOME/backup_filelist.log $BACKUP_TARGET > $HOME/backup_filelist.log
 echo "Initailising Megatools operations:"
 ##
-file=$HOME/$NAME.tar.gz
+file=$HOME/$NAME
 #checking whether there is enough free space for upload
-backup_file_size=`du -b $HOME/$NAME.tar.gz | awk '{print $1}'`
+backup_file_size=`du -b $HOME/$NAME | awk '{print $1}'`
 freespace=`megadf | grep Free | awk '{print $2}'`
 if [ $freespace -gt $backup_file_size ]; then
     echo Uploading...
     echo "Output from upload:"
-    /usr/local/bin/megaput $NAME.tar.gz
+    /usr/local/bin/megaput $HOME/$NAME
 elif [ $backup_file_size -gt 53687091200 ]; then
 	echo This shit is too big for a free account
 else
@@ -59,5 +59,5 @@ cat $LOGFILE | mutt -a $HOME/backup_filelist.log -s "$SUBJECT" -- $E_MAIL
 
 #Clean-up
 rm -f $HOME/all_databases_$DATE.sql.gz
-rm -f $HOME/$NAME.tar.gz
+rm -f $HOME/$NAME
 rm -f $LOGFILE
