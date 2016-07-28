@@ -4,24 +4,27 @@
 E_MAIL=your_email_address
 PASSWORD_MYSQL=your_root_mysql_pass
 DATE=`date +%d-%m-%y-%H-%M`
+BACKUP_PREFIX=backup_
 NAME=`hostname`_$DATE
-LOGFILE=/root/backup_$NAME.log
+#LOGFILE=/root/backup_$NAME.log
+LOGFILE=$HOME/backup_$NAME.log
 BACKUP_TARGET=/root/testdir #What to back-up
 #Just for account creation:
 email_domain=your_email_domain
-email_drop=/var/spool/mail/root #change for different user
-MEGA_password=`awk 'NR==3' /root/.megarc | awk '{print $3}'`
+#email_drop=/var/spool/mail/root #change for different user
+email_drop=/var/spool/mail/`whoami`
+MEGA_password=`awk 'NR==3' /$HOME/.megarc | awk '{print $3}'`
 exec > $LOGFILE
 exec 2>&1
 cd /
 echo "Initailised Logfile on $DATE" >> $LOGFILE
-mysqldump -u root -p$PASSWORD_MYSQL --events --all-databases | gzip > /root/all_databases_$DATE.sql.gz
-tar -cvpzf $NAME.tar.gz --exclude=/$NAME.tar.gz --exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/son9o/steamcmd --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=/root/backup_filelist.log $BACKUP_TARGET > /root/backup_filelist.log
+mysqldump -u root -p$PASSWORD_MYSQL --events --all-databases | gzip > $HOME/all_databases_$DATE.sql.gz
+tar -cvpzf $HOME/$NAME.tar.gz --exclude=$HOME/$NAME.tar.gz --exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/son9o/steamcmd --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=$HOME/backup_filelist.log $BACKUP_TARGET > $HOME/backup_filelist.log
 echo "Initailising Megatools operations:"
 ##
-file=/$NAME.tar.gz
+file=$HOME/$NAME.tar.gz
 #checking whether there is enough free space for upload
-backup_file_size=`du -b /$NAME.tar.gz | awk '{print $1}'`
+backup_file_size=`du -b $HOME/$NAME.tar.gz | awk '{print $1}'`
 freespace=`megadf | grep Free | awk '{print $2}'`
 if [ $freespace -gt $backup_file_size ]; then
     echo Uploading...
@@ -32,7 +35,7 @@ elif [ $backup_file_size -gt 53687091200 ]; then
 else
     echo not enough space on drive makign new acc, #missing recursive call to upload and changing the megarc details
     #format used Username = backup_4digit_number@your_email_domain; requires a front digit eg.backup_1000@your_email_domain otherwise bash shortens it and string slicing will not work 
-    megaaccount=`awk 'NR==2' /root/.megarc | awk '{print $3}'` 
+    megaaccount=`awk 'NR==2' $HOME/.megarc | awk '{print $3}'` 
     megaaccountnumber=${megaaccount:7:4}
     ((megaaccountnumber++))
     MEGA_confirm_key=`megareg --name=backup_$megaaccountnumber --email=backup_$megaaccountnumber@$email_domain --password==$MEGA_password --register --scripted | awk '{print $3}'
@@ -50,11 +53,11 @@ echo "File List:"
 echo "This backup:"
 /usr/local/bin/megals -ehl | grep -i $NAME
 echo "Login credentails used:" 
-cat /root/.megarc
+cat $HOME/.megarc
 #sending execution log and filelist
-cat $LOGFILE | mutt -a /root/backup_filelist.log -s "$SUBJECT" -- $E_MAIL
+cat $LOGFILE | mutt -a $HOME/backup_filelist.log -s "$SUBJECT" -- $E_MAIL
 
 #Clean-up
-rm -f /root/all_databases_$DATE.sql.gz
-rm -f /$NAME.tar.gz
+rm -f $HOME/all_databases_$DATE.sql.gz
+rm -f $HOME/$NAME.tar.gz
 rm -f $LOGFILE
