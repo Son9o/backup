@@ -5,11 +5,11 @@
 set -o nounset
 set -o errexit
 set_firstime_MEGA_password=This_is_your_s4fe_Password
-E_MAIL=$USER@$HOSTNAME
+E_MAIL=$USER@$HOSTNAME ##set e-mail to set backup log to
 PASSWORD_MYSQL=your_root_mysql_pass
 DATE=`date +%d-%m-%y-%H-%M`
 backup_prefix=backup_
-NAME=`hostname`_$DATE.tar.gz
+NAME=${backup_prefix}`hostname`_${DATE}.tar.gz
 #LOGFILE=/root/backup_$NAME.log
 LOGFILE=$HOME/$backup_prefix$NAME.log
 BACKUP_TARGET=/tmp/testdir #What to back-up
@@ -36,7 +36,7 @@ exec 2>&1
 #cd /
 echo "Initailised Logfile on $DATE" >> $LOGFILE
 mysqldump -u root -p$PASSWORD_MYSQL --events --all-databases | gzip > $HOME/all_databases_$DATE.sql.gz
-tar -cvpzf $backup_file_location --exclude=$backup_file_location--exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/son9o/steamcmd --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=$HOME/backup_filelist.log $BACKUP_TARGET > $HOME/backup_filelist.log
+tar -cvpzf $backup_file_location --exclude=$backup_file_location --exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/son9o/steamcmd --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=$HOME/backup_filelist.log $BACKUP_TARGET > $HOME/backup_filelist.log
 echo "Initailising Megatools operations:"
 ##
 #checking whether there is enough free space for upload
@@ -52,7 +52,8 @@ else
     echo not enough space on drive makign new acc, #missing recursive call to upload and changing the megarc details
     #format used Username = backup_4digit_number@your_email_domain; requires a front digit eg.backup_1000@your_email_domain otherwise bash shortens it and string slicing will not work 
     megaaccount=`awk 'NR==2' $HOME/.megarc | awk '{print $3}'` 
-    megaaccountnumber=${megaaccount:7:4}
+    #megaaccountnumber=${megaaccount:7:4}
+    megaaccountnumber=${megaaccount#${backup_prefix}}; megaaccountnumber=${megaaccountnumber%@${email_domain}}
     ((megaaccountnumber++))
     MEGA_confirm_key=`megareg --name=$backup_prefix$megaaccountnumber --email=$backup_prefix$megaaccountnumber@$email_domain --password=$MEGA_password --register --scripted | awk '{print $3}'`
     sleep 1m 
@@ -70,7 +71,8 @@ echo "This backup:"
 echo "Login credentails used:" 
 cat $HOME/.megarc
 #sending execution log and filelist
-cat $LOGFILE | mutt -a $HOME/backup_filelist.log -s "$SUBJECT" -- $E_MAIL
+email_subject="Backup of ${HOSTNAME} from ${DATE}"
+cat $LOGFILE | mutt -a $HOME/backup_filelist.log -s "${email_subject}" -- $E_MAIL
 
 #Clean-up
 rm -f $HOME/all_databases_$DATE.sql.gz
