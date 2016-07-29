@@ -1,6 +1,7 @@
 #!/bin/bash
 ##REQUIRES: Megatools installed(https://github.com/megous/megatools), mutt, awk
 #all megatools calls are using ~/.megarc credentials
+#For new MEGA account creation catch-all address must be set-up to the user that's running the script or otherwise permission to read spool given.
 set -o nounset
 set -o errexit
 set_firstime_MEGA_password=This_is_your_s4fe_Password
