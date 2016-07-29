@@ -11,7 +11,7 @@ DATE=`date +%d-%m-%y-%H-%M`
 backup_prefix=backup_
 NAME=${backup_prefix}`hostname`_${DATE}.tar.gz
 #LOGFILE=/root/backup_$NAME.log
-LOGFILE=$HOME/$backup_prefix$NAME.log
+LOGFILE=$HOME/$NAME.log
 BACKUP_TARGET=/root/testdir #What to back-up
 backup_file_location=$HOME/$NAME
 #Just for account creation:
