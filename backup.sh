@@ -59,7 +59,8 @@ else
     sleep 1m 
     MEGA_confirm_link=`tac $email_drop | grep ^http | grep -m1 confirm`
     megareg --verify $MEGA_confirm_key $MEGA_confirm_link
-
+    echo -e "[Login]\nUsername = ${backup_prefix}${megaaccountnumber}@${email_domain}\nPassword = $MEGA_password\n" > $HOME/.megarc
+    /usr/local/bin/megaput $backup_file_location
 fi
 
 echo "Disk space check:" 
