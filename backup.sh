@@ -12,7 +12,7 @@ backup_prefix=backup_
 NAME=${backup_prefix}`hostname`_${DATE}.tar.gz
 #LOGFILE=/root/backup_$NAME.log
 LOGFILE=$HOME/$backup_prefix$NAME.log
-BACKUP_TARGET=/tmp/testdir #What to back-up
+BACKUP_TARGET=/root/testdir #What to back-up
 backup_file_location=$HOME/$NAME
 #Just for account creation:
 email_domain=$HOSTNAME
@@ -36,7 +36,7 @@ exec 2>&1
 #cd /
 echo "Initailised Logfile on $DATE" >> $LOGFILE
 mysqldump -u root -p$PASSWORD_MYSQL --events --all-databases | gzip > $HOME/all_databases_$DATE.sql.gz
-tar -cvpzf $backup_file_location --exclude=$backup_file_location --exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/son9o/steamcmd --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=$HOME/backup_filelist.log $BACKUP_TARGET > $HOME/backup_filelist.log
+tar -cvpzf $backup_file_location --exclude=$backup_file_location --exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=$HOME/backup_filelist.log $BACKUP_TARGET > $HOME/backup_filelist.log
 echo "Initailising Megatools operations:"
 ##
 #checking whether there is enough free space for upload
