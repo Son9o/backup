@@ -25,8 +25,8 @@ then
 else
 	echo "Creating a new MEGA Account and $HOME/.megarc"
 	MEGA_password=$set_firstime_MEGA_password
-	echo -e "[Login]\nUsername = ${backup_prefix}1000@email_domain\nPassword = $MEGA_password\n" 
-	MEGA_confirm_key=`megareg --name=${backup_prefix}1000 --email=${backup_prefix}1000@$email_domain --password=$MEGA_password --register --scripted | awk '{print $3}'`
+	echo -e "[Login]\nUsername = ${backup_prefix}1000@${email_domain}\nPassword = $MEGA_password\n" 
+	MEGA_confirm_key=`megareg --name=${backup_prefix}1000 --email=${backup_prefix}1000@${email_domain} --password=$MEGA_password --register --scripted | awk '{print $3}'`
     	sleep 1m 
     	MEGA_confirm_link=`tac $email_drop | grep ^http | grep -m1 confirm`
     	megareg --verify $MEGA_confirm_key $MEGA_confirm_link
