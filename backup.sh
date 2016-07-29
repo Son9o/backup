@@ -18,7 +18,8 @@ backup_file_location=$HOME/$NAME
 email_domain=$HOSTNAME
 #email_drop=/var/spool/mail/root #change for different user
 email_drop=/var/spool/mail/`whoami`
-if [ -e $HOME/.megarc ] then
+if [ -e $HOME/.megarc ] 
+then
 	echo ".mmegarc found using stored password"
 	MEGA_password=`awk 'NR==3' $HOME/.megarc | awk '{print $3}'`
 else
