@@ -1,7 +1,8 @@
 #!/bin/bash
 ##REQUIRES: Megatools installed(https://github.com/megous/megatools), mutt, awk
 #all megatools calls are using ~/.megarc credentials
-#For new MEGA account creation catch-all address must be set-up to the user that's running the script or otherwise permission to read spool given.
+#For new MEGA account creation catch-all address must be set-up to the user that's running the script or otherwise permission to read spool given in email_drop variable.
+#For ease of usage of all features best run as root
 set -o nounset
 set -o errexit
 set_firstime_MEGA_password=This_is_your_s4fe_Password
@@ -10,17 +11,16 @@ PASSWORD_MYSQL=your_root_mysql_pass
 DATE=`date +%d-%m-%y-%H-%M`
 backup_prefix=backup_
 NAME=${backup_prefix}`hostname`_${DATE}.tar.gz
-#LOGFILE=/root/backup_$NAME.log
 LOGFILE=$HOME/$NAME.log
-BACKUP_TARGET=/root/testdir #What to back-up
+BACKUP_TARGET=/ #What to back-up, default is whole filessytem
 backup_file_location=$HOME/$NAME
 #Just for account creation:
 email_domain=$HOSTNAME
-#email_drop=/var/spool/mail/root #change for different user
-email_drop=/var/spool/mail/`whoami`
-if [ -e $HOME/.megarc ] 
+email_drop=/var/spool/mail/`whoami` #using spool for current user
+##############
+if [ -e $HOME/.megarc ] #######checking if there is .megarc file or creating a new one for new backups
 then
-	echo ".mmegarc found using stored password"
+	#echo ".mmegarc found using stored password"
 	MEGA_password=`awk 'NR==3' $HOME/.megarc | awk '{print $3}'`
 else
 	echo "Creating a new MEGA Account and $HOME/.megarc"
@@ -31,15 +31,18 @@ else
     	MEGA_confirm_link=`tac $email_drop | grep ^http | grep -m1 confirm`
     	megareg --verify $MEGA_confirm_key $MEGA_confirm_link
 	fi
+###set logging to file
 exec > $LOGFILE
 exec 2>&1
-#cd /
+###
+##Starting regular script operation
 echo "Initailised Logfile on $DATE" >> $LOGFILE
+#dumping all mysqls using root account
 mysqldump -u root -p$PASSWORD_MYSQL --events --all-databases | gzip > $HOME/all_databases_$DATE.sql.gz
+#Taking snapshot of filesystem excluding common runtime directories 
 tar -cvpzf $backup_file_location --exclude=$backup_file_location --exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=$HOME/backup_filelist.log $BACKUP_TARGET > $HOME/backup_filelist.log
 echo "Initailising Megatools operations:"
-##
-#checking whether there is enough free space for upload
+#checking whether there is enough free space for upload # whether file is bigger than 50 GB(size of free account) # and finally creating a new account if current one is too full
 backup_file_size=`du -b $backup_file_location | awk '{print $1}'`
 freespace=`megadf | grep Free | awk '{print $2}'`
 if [ $freespace -gt $backup_file_size ]; then
@@ -48,11 +51,10 @@ if [ $freespace -gt $backup_file_size ]; then
     /usr/local/bin/megaput $backup_file_location
 elif [ $backup_file_size -gt 53687091200 ]; then
 	echo This shit is too big for a free account
+	exit 1
 else
     echo not enough space on drive makign new acc, #missing recursive call to upload and changing the megarc details
-    #format used Username = backup_4digit_number@your_email_domain; requires a front digit eg.backup_1000@your_email_domain otherwise bash shortens it and string slicing will not work 
     megaaccount=`awk 'NR==2' $HOME/.megarc | awk '{print $3}'` 
-    #megaaccountnumber=${megaaccount:7:4}
     megaaccountnumber=${megaaccount#${backup_prefix}}; megaaccountnumber=${megaaccountnumber%@${email_domain}}
     ((megaaccountnumber++))
     MEGA_confirm_key=`megareg --name=$backup_prefix$megaaccountnumber --email=$backup_prefix$megaaccountnumber@$email_domain --password=$MEGA_password --register --scripted | awk '{print $3}'`
@@ -62,7 +64,7 @@ else
     echo -e "[Login]\nUsername = ${backup_prefix}${megaaccountnumber}@${email_domain}\nPassword = $MEGA_password\n" > $HOME/.megarc
     /usr/local/bin/megaput $backup_file_location
 fi
-
+#Listing some usage statistics for email.
 echo "Disk space check:" 
 /usr/local/bin/megadf --gb
 echo "File List:"
