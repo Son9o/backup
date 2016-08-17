@@ -3,6 +3,7 @@
 #all megatools calls are using ~/.megarc credentials
 #For new MEGA account creation catch-all address must be set-up to the user that's running the script or otherwise permission to read spool given in email_drop variable.
 #For ease of usage of all features best run as root
+PATH=${PATH}:/usr/local/bin ## Adds location of megatools binaries to path
 set -o nounset
 set -o errexit
 set_firstime_MEGA_password=This_is_your_s4fe_Password
