@@ -8,7 +8,7 @@ set -o nounset
 set -o errexit
 set_firstime_MEGA_password=This_is_your_s4fe_Password
 E_MAIL=$USER@$HOSTNAME ##set e-mail to set backup log to
-PASSWORD_MYSQL=your_root_mysql_pass
+PASSWORD_MYSQL_ROOT=`awk 'NR == 1 {print $3}' /root/.mysqlrc` ## reads pass from /root/.mysqlrc in format "root = pass"
 DATE=`date +%d-%m-%y-%H-%M`
 backup_prefix=backup_
 NAME=${backup_prefix}`hostname`_${DATE}.tar.gz
@@ -39,7 +39,7 @@ exec 2>&1
 ##Starting regular script operation
 echo "Initailised Logfile on $DATE" >> $LOGFILE
 #dumping all mysqls using root account
-mysqldump -u root -p$PASSWORD_MYSQL --events --all-databases | gzip > $HOME/all_databases_$DATE.sql.gz
+mysqldump -u root -p$PASSWORD_MYSQL_ROOT --events --all-databases | gzip > $HOME/all_databases_$DATE.sql.gz
 #Taking snapshot of filesystem excluding common runtime directories 
 tar -cvpzf $backup_file_location --exclude=$backup_file_location --exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=$HOME/backup_filelist.log $BACKUP_TARGET > $HOME/backup_filelist.log
 echo "Initailising Megatools operations:"
