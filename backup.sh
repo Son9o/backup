@@ -20,7 +20,7 @@ email_domain=$HOSTNAME
 email_drop=/var/spool/mail/`whoami` #using spool for current user
 ##############
 if [ -e $HOME/.megarc ] #######checking if there is .megarc file or creating a new one for new backups
-hen
+then
 	#echo ".mmegarc found using stored password"
 	MEGA_password=`awk 'NR==3' $HOME/.megarc | awk '{print $3}'`
 else
@@ -39,8 +39,8 @@ exec 2>&1
 ##Starting regular script operation
 echo "Initailised Logfile on $DATE" >> $LOGFILE
 #dumping all mysqls using root account
-mysqldump -u root -p$PASSWORD_MYSQL_ROOT --events --all-databases | gzip > $HOME/all_databases_$DATE.sql.gz
-mysqldump -u root -p$PASSWORD_MYSQL_ROOT pdns | gzip > $HOME/backup_pdns_database_$DATE.sql.gz
+mysqldump -u root -p${PASSWORD_MYSQL_ROOT} --events --all-databases | gzip > $HOME/all_databases_$DATE.sql.gz
+mysqldump -u root -p${PASSWORD_MYSQL_ROOT} pdns | gzip > $HOME/backup_pdns_database_$DATE.sql.gz
 #Taking snapshot of filesystem excluding common runtime directories 
 tar -cvpzf $backup_file_location --exclude=$backup_file_location --exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=$HOME/backup_filelist.log $BACKUP_TARGET > $HOME/backup_filelist.log
 echo "Initailising Megatools operations:"
