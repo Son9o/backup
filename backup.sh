@@ -27,7 +27,8 @@ else
 	echo "Creating a new MEGA Account and $HOME/.megarc"
 	MEGA_password=$set_firstime_MEGA_password
 	echo -e "[Login]\nUsername = ${backup_prefix}1000@${email_domain}\nPassword = $MEGA_password\n" > $HOME/.megarc
-	MEGA_confirm_key=`megareg --name=${backup_prefix}1000 --email=${backup_prefix}1000@${email_domain} --password=$MEGA_password --register --scripted | awk '{print $3}'`
+	$megaaccountnumber=1000
+	MEGA_confirm_key=`megareg --name=${backup_prefix}$megaaccountnumber --email=${backup_prefix}$megaaccountnumber@${email_domain} --password=$MEGA_password --register --scripted | awk '{print $3}'`
     	sleep 1m 
     	MEGA_confirm_link=`tac $email_drop | grep ^http | grep -m1 confirm`
     	megareg --verify $MEGA_confirm_key $MEGA_confirm_link
@@ -39,7 +40,7 @@ exec 2>&1
 ##Starting regular script operation
 echo "Initailised Logfile on $DATE" >> $LOGFILE
 #dumping all mysqls using root account
-mysqldump -u root -p${PASSWORD_MYSQL_ROOT} --events --all-databases | gzip > $HOME/all_databases_$DATE.sql.gz
+mysqldump -u root -p${PASSWORD_MYSQL_ROOT} --events --all-databases | gzip > $HOME/backup_all_databases_$DATE.sql.gz
 mysqldump -u root -p${PASSWORD_MYSQL_ROOT} pdns | gzip > $HOME/backup_pdns_database_$DATE.sql.gz
 #Taking snapshot of filesystem excluding common runtime directories 
 tar -cvpzf $backup_file_location --exclude=$backup_file_location --exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=$HOME/backup_filelist.log $BACKUP_TARGET > $HOME/backup_filelist.log
@@ -55,12 +56,31 @@ elif [ $backup_file_size -gt 53687091200 ]; then
 	echo This shit is too big for a free account
 	exit 1
 else
-    echo not enough space on drive makign new acc, #missing recursive call to upload and changing the megarc details
+    echo not enough space on drive making new acc
     megaaccount=`awk 'NR==2' $HOME/.megarc | awk '{print $3}'` 
     megaaccountnumber=${megaaccount#${backup_prefix}}; megaaccountnumber=${megaaccountnumber%@${email_domain}}
     ((megaaccountnumber++))
     MEGA_confirm_key=`megareg --name=$backup_prefix$megaaccountnumber --email=$backup_prefix$megaaccountnumber@$email_domain --password=$MEGA_password --register --scripted | awk '{print $3}'`
-    sleep 1m 
+    sleep 1m
+    if [ `grep EEXIST ${LOGFILE} | wc -l` ]; then
+		COUNTER_EEXIST=1
+		((megaaccountnumber++))
+		MEGA_confirm_key=`megareg --name=$backup_prefix$megaaccountnumber --email=$backup_prefix$megaaccountnumber@$email_domain --password=$MEGA_password --register --scripted | awk '{    print $3}'`
+		sleep 1m
+		echo in-if
+		echo $COUNTER_EEXIST
+		while [ `grep EEXIST ${LOGFILE} | wc -l` -gt $COUNTER_EEXIST ]
+		do ##### I think it would be worth making a function for account creation since its the same thing across the board and it will look neater, also needs further testing 
+			echo in-while
+			echo $COUNTER_EEXIST
+			((COUNTER_EEXIST++))
+			((megaaccountnumber++))
+			MEGA_confirm_key=`megareg --name=$backup_prefix$megaaccountnumber --email=$backup_prefix$megaaccountnumber@$email_domain --password=$MEGA_password --register --scripted | awk '{        print $3}'`
+			echo $COUNTER_EEXIST
+    	done
+	fi
+	echo $megaaccountnumber
+	echo back to confirming
     MEGA_confirm_link=`tac $email_drop | grep ^http | grep -m1 confirm`
     megareg --verify $MEGA_confirm_key $MEGA_confirm_link
     echo -e "[Login]\nUsername = ${backup_prefix}${megaaccountnumber}@${email_domain}\nPassword = $MEGA_password\n" > $HOME/.megarc
