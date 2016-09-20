@@ -65,22 +65,16 @@ else
     if [ `grep EEXIST ${LOGFILE} | wc -l` ]; then
 		COUNTER_EEXIST=1
 		((megaaccountnumber++))
-		MEGA_confirm_key=`megareg --name=$backup_prefix$megaaccountnumber --email=$backup_prefix$megaaccountnumber@$email_domain --password=$MEGA_password --register --scripted | awk '{    print $3}'`
+		MEGA_confirm_key=`megareg --name=$backup_prefix$megaaccountnumber --email=$backup_prefix$megaaccountnumber@$email_domain --password=$MEGA_password --register --scripted | awk '{print $3}'`
 		sleep 1m
-		echo in-if
-		echo $COUNTER_EEXIST
 		while [ `grep EEXIST ${LOGFILE} | wc -l` -gt $COUNTER_EEXIST ]
-		do ##### I think it would be worth making a function for account creation since its the same thing across the board and it will look neater, also needs further testing 
-			echo in-while
-			echo $COUNTER_EEXIST
+		do ##### I think it would be worth making a function for account creation since its the same thing across the board, seems to work though 
 			((COUNTER_EEXIST++))
 			((megaaccountnumber++))
-			MEGA_confirm_key=`megareg --name=$backup_prefix$megaaccountnumber --email=$backup_prefix$megaaccountnumber@$email_domain --password=$MEGA_password --register --scripted | awk '{        print $3}'`
-			echo $COUNTER_EEXIST
+			MEGA_confirm_key=`megareg --name=$backup_prefix$megaaccountnumber --email=$backup_prefix$megaaccountnumber@$email_domain --password=$MEGA_password --register --scripted | awk '{print $3}'`
+			sleep 1m
     	done
 	fi
-	echo $megaaccountnumber
-	echo back to confirming
     MEGA_confirm_link=`tac $email_drop | grep ^http | grep -m1 confirm`
     megareg --verify $MEGA_confirm_key $MEGA_confirm_link
     echo -e "[Login]\nUsername = ${backup_prefix}${megaaccountnumber}@${email_domain}\nPassword = $MEGA_password\n" > $HOME/.megarc
@@ -100,7 +94,8 @@ email_subject="Backup of ${HOSTNAME} from ${DATE}"
 cat $LOGFILE | mutt -a $HOME/backup_filelist.log -s "${email_subject}" -- $E_MAIL
 
 #Clean-up
-rm -f $HOME/all_databases_$DATE.sql.gz
+backup_all_databases_
+rm -f $HOME/backup_all_databases_$DATE.sql.gz
 rm -f $backup_file_location
 rm -f $HOME/backup_pdns_database_$DATE.sql.gz
 rm -f $LOGFILE
