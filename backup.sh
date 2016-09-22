@@ -94,7 +94,6 @@ email_subject="Backup of ${HOSTNAME} from ${DATE}"
 cat $LOGFILE | mutt -a $HOME/backup_filelist.log -s "${email_subject}" -- $E_MAIL
 
 #Clean-up
-backup_all_databases_
 rm -f $HOME/backup_all_databases_$DATE.sql.gz
 rm -f $backup_file_location
 rm -f $HOME/backup_pdns_database_$DATE.sql.gz
