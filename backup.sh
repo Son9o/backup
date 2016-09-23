@@ -19,7 +19,7 @@ backup_file_location=$HOME/$NAME
 email_domain=$HOSTNAME
 email_drop=/var/spool/mail/`whoami` #using spool for current user
 ##############
-if [ -e $HOME/.megarc ] #######checking if there is .megarc file or creating a new one for new backups
+if [ -e $HOME/.megarc ] #######checking if there is .megarc file or creating a new one for new backups alongside new account
 then
 	#echo ".mmegarc found using stored password"
 	MEGA_password=`awk 'NR==3' $HOME/.megarc | awk '{print $3}'`
@@ -41,9 +41,35 @@ exec 2>&1
 echo "Initailised Logfile on $DATE" >> $LOGFILE
 #dumping all mysqls using root account
 mysqldump -u root -p${PASSWORD_MYSQL_ROOT} --events --all-databases | gzip > $HOME/backup_all_databases_$DATE.sql.gz
+#dumping additional DB
 mysqldump -u root -p${PASSWORD_MYSQL_ROOT} pdns | gzip > $HOME/backup_pdns_database_$DATE.sql.gz
 #Taking snapshot of filesystem excluding common runtime directories 
-tar -cvpzf $backup_file_location --exclude=$backup_file_location --exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads --exclude=$HOME/backup_filelist.log $BACKUP_TARGET > $HOME/backup_filelist.log
+tar -cvpzf $backup_file_location --exclude=$backup_file_location  --exclude=$HOME/backup_filelist.log --exclude=/proc --exclude=/sys --exclude=/mnt --exclude=/media --exclude=/run --exclude=/dev --exclude=/lost+found --exclude=/tmp --exclude=/var/lib/gssproxy/default.sock \
+--exclude=/var/lib/mysql/mysql.sock \
+--exclude=/var/spool/postfix/private/tlsmgr \
+--exclude=/var/spool/postfix/private/rewrite \
+--exclude=/var/spool/postfix/private/bounce \
+--exclude=/var/spool/postfix/private/defer \
+--exclude=/var/spool/postfix/private/trace \
+--exclude=/var/spool/postfix/private/verify \
+--exclude=/var/spool/postfix/private/proxymap \
+--exclude=/var/spool/postfix/private/proxywrite \
+--exclude=/var/spool/postfix/private/smtp \
+--exclude=/var/spool/postfix/private/relay \
+--exclude=/var/spool/postfix/private/error \
+--exclude=/var/spool/postfix/private/retry \
+--exclude=/var/spool/postfix/private/discard \
+--exclude=/var/spool/postfix/private/local \
+--exclude=/var/spool/postfix/private/virtual \
+--exclude=/var/spool/postfix/private/lmtp \
+--exclude=/var/spool/postfix/private/anvil \
+--exclude=/var/spool/postfix/private/scache \
+--exclude=/var/spool/postfix/public/pickup \
+--exclude=/var/spool/postfix/public/cleanup \
+--exclude=/var/spool/postfix/public/qmgr \
+--exclude=/var/spool/postfix/public/flush \
+--exclude=/var/spool/postfix/public/showq \
+--exclude=/home/transmission/Downloads --exclude=/var/lib/transmission/Downloads $BACKUP_TARGET > $HOME/backup_filelist.log
 echo "Initailising Megatools operations:"
 #checking whether there is enough free space for upload # whether file is bigger than 50 GB(size of free account) # and finally creating a new account if current one is too full
 backup_file_size=`du -b $backup_file_location | awk '{print $1}'`
