@@ -77,7 +77,7 @@ freespace=`megadf | grep Free | awk '{print $2}'`
 if [ $freespace -gt $backup_file_size ]; then
     echo Uploading...
     echo "Output from upload:"
-    /usr/local/bin/megaput $backup_file_location
+    /usr/local/bin/megaput --no-progress $backup_file_location
 elif [ $backup_file_size -gt 53687091200 ]; then
 	echo This shit is too big for a free account
 	exit 1
@@ -104,7 +104,7 @@ else
     MEGA_confirm_link=`tac $email_drop | grep ^http | grep -m1 confirm`
     megareg --verify $MEGA_confirm_key $MEGA_confirm_link
     echo -e "[Login]\nUsername = ${backup_prefix}${megaaccountnumber}@${email_domain}\nPassword = $MEGA_password\n" > $HOME/.megarc
-    /usr/local/bin/megaput $backup_file_location
+    /usr/local/bin/megaput --no-progress $backup_file_location
 fi
 #Listing some usage statistics for email.
 echo "Disk space check:" 
@@ -124,3 +124,4 @@ rm -f $HOME/backup_all_databases_$DATE.sql.gz
 rm -f $backup_file_location
 rm -f $HOME/backup_pdns_database_$DATE.sql.gz
 rm -f $LOGFILE
+rm -f $HOME/backup_filelist.log
